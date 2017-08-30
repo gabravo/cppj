@@ -1,5 +1,6 @@
 package edu.coursera.parallel;
 
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
 /**
@@ -101,6 +102,8 @@ public final class ReciprocalArraySum {
          */
         private double value;
 
+        private static final int SEQUENTIAL_THRESHOLD = 100000;
+
         /**
          * Constructor.
          * @param setStartIndexInclusive Set the starting index to begin
@@ -125,12 +128,22 @@ public final class ReciprocalArraySum {
 
         @Override
         protected void compute() {
-            // TODO
+            if (this.endIndexExclusive - this.startIndexInclusive <= SEQUENTIAL_THRESHOLD) {
+                for (int i = this.startIndexInclusive; i < this.endIndexExclusive; i++) {
+                    value += 1 / this.input[i];
+                }
+            } else {
+                ReciprocalArraySumTask left = new ReciprocalArraySumTask(this.startIndexInclusive, (this.startIndexInclusive + this.endIndexExclusive) / 2, this.input);
+                ReciprocalArraySumTask right = new ReciprocalArraySumTask((this.startIndexInclusive + this.endIndexExclusive) / 2, this.endIndexExclusive, this.input);
+                left.fork();
+                right.compute();
+                left.join();
+                value = left.value + right.value;
+            }
         }
     }
 
     /**
-     * TODO: Modify this method to compute the same reciprocal sum as
      * seqArraySum, but use two tasks running in parallel under the Java Fork
      * Join framework. You may assume that the length of the input array is
      * evenly divisible by 2.
@@ -141,13 +154,9 @@ public final class ReciprocalArraySum {
     protected static double parArraySum(final double[] input) {
         assert input.length % 2 == 0;
 
-        double sum = 0;
-
-        // Compute sum of reciprocals of array elements
-        for (int i = 0; i < input.length; i++) {
-            sum += 1 / input[i];
-        }
-
+        ReciprocalArraySumTask t = new ReciprocalArraySumTask(0, input.length, input);
+        ForkJoinPool.commonPool().invoke(t);
+        double sum = t.getValue();
         return sum;
     }
 
