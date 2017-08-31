@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import static java.lang.Math.toIntExact;
 
@@ -110,13 +111,22 @@ public final class StudentAnalytics {
      */
     public String mostCommonFirstNameOfInactiveStudentsParallelStream(
             final Student[] studentArray) {
-        throw new UnsupportedOperationException();
 
-/*
-        String res = Stream.of(studentArray)
+        Map<String, Long> nameCounts = Stream.of(studentArray)
                 .parallel()
                 .filter(s->!s.checkIsCurrent())
-*/
+                .collect(
+                        Collectors.groupingBy(Student::getFirstName, Collectors.counting())
+                );
+
+        String res = nameCounts.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(1)
+                .findFirst()
+                .get()
+                .getKey();
+
+        return res;
     }
 
     /**
