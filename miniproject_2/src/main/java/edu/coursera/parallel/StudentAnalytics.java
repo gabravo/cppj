@@ -119,7 +119,9 @@ public final class StudentAnalytics {
                         Collectors.groupingBy(Student::getFirstName, Collectors.counting())
                 );
 
-        String res = nameCounts.entrySet().stream()
+        String res = nameCounts.entrySet()
+                .stream()
+                .parallel()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .limit(1)
                 .findFirst()
