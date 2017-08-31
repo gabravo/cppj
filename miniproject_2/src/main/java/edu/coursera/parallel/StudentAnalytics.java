@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.stream.Stream;
+import static java.lang.Math.toIntExact;
+
 
 /**
  * A simple wrapper class for various analytics methods.
@@ -109,6 +111,12 @@ public final class StudentAnalytics {
     public String mostCommonFirstNameOfInactiveStudentsParallelStream(
             final Student[] studentArray) {
         throw new UnsupportedOperationException();
+
+/*
+        String res = Stream.of(studentArray)
+                .parallel()
+                .filter(s->!s.checkIsCurrent())
+*/
     }
 
     /**
@@ -144,6 +152,14 @@ public final class StudentAnalytics {
      */
     public int countNumberOfFailedStudentsOlderThan20ParallelStream(
             final Student[] studentArray) {
-        throw new UnsupportedOperationException();
+
+        long res = Stream.of(studentArray)
+                .parallel()
+                .filter(s->!s.checkIsCurrent())
+                .filter(s->s.getAge() > 20)
+                .filter(s->s.getGrade() < 65)
+                .count();
+
+        return toIntExact(res);
     }
 }
